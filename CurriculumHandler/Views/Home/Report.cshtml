@@ -1,12 +1,44 @@
 ﻿@{
     Layout = "../_Layout";
-    ViewData["Title"] = "Домашня";
+    ViewData["Title"] = "Звіт";
 }
-@model CurriculumHandler.Models.Report
+@model CurriculumHandler.Models.DocReport
 @addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
 <div class="text-center">
-    <h1 class="display-4">Вибір документів</h1>
-    <p>Завантажте документи щоб отримати детальний звіт</p>
+    <h1 class="display-4">Звіт @Model.DocName</h1>
 </div>
+
+<table class="table table-striped">
+    @foreach (var row in Model.RowReports)
+    {
+        <tr class="@(row.Result ? "table-success" : "table-danger")">
+            <td>
+                @Html.DisplayName(row.RowName)
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <table class="table mb-0">
+                    <thead>
+                        <tr>
+                            <th scope="col" style="width: 10%">Комірка</th>
+                            <th scope="col" style="width: 90%">Повідомлення</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var cell in row.CellReports)
+                        {
+                            <tr class="@(cell.Result ? "table-success" : "table-danger")">
+                                <td>@Html.DisplayName(cell.Address)</td>
+                                <td>@Html.Raw(cell.Message)</td>
+                            </tr>
+
+                        }
+                    </tbody>
+                </table>
+                
+        </tr>
+    }
+</table>
 
 

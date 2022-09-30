@@ -26,12 +26,12 @@ namespace CurriculumHandler.Controllers
             {
                 return RedirectToAction("Index", "Home", "alert");
             }
-            var doc1 = reader.ReadDoc1();
-            var doc2 = reader.ReadDoc2();
-            var doc3 = reader.ReadDoc3();
+            var book1 = reader.GetBook(files.File1);
+            var book2 = reader.GetBook(files.File2);
+            var book3 = reader.GetBook(files.File3);
 
-            var report = processor.Process(doc1, doc2, doc3);
-
+            var report = processor.Process(book1, book2, book3);
+            report.DocName = files.File3.FileName;
             return View("Report", report);
         }
     }

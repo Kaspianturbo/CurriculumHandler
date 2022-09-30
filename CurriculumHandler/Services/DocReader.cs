@@ -1,23 +1,12 @@
 ﻿using CurriculumHandler.Interfaces;
 using CurriculumHandler.Models;
+using ClosedXML.Excel;
+using DocumentFormat.OpenXml.Spreadsheet;
 
 namespace CurriculumHandler.Services
 {
     public class DocReader : IDocReader
     {
-        public Doc1 ReadDoc1()
-        {
-            throw new NotImplementedException();
-        }
-
-        public Doc2 ReadDoc2()
-        {
-            throw new NotImplementedException();
-        }
-
-        public Doc3 ReadDoc3()
-        {
-            throw new NotImplementedException();
-        }
+        public XLWorkbook GetBook(IFormFile file) => new(file.OpenReadStream());
     }
 }
