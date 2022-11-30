@@ -6,46 +6,53 @@ using CurriculumHandler.Models;
 
 namespace CurriculumHandler.Services
 {
-    public class DocProcessor : IDocProcessor
+    public class LoadingProcessor : IDocProcessor
     {
-        public DocReport Process(IXLWorkbook book1, IXLWorkbook book2, IXLWorkbook book3)
+        public DocReport Process(IXLWorkbook book2, IEnumerable<string> range2, IXLWorkbook book3, IEnumerable<string> range3)
         {
             var reportList = new List<RowReport>();
-            var sheet1 = book1.Worksheets.Worksheet(2);
-            //var sheet1 = book1.Worksheets.Worksheet(2);
             var sheet3 = book3.Worksheets.Worksheet(2);
+            var sheet2 = book2.Worksheets.Worksheet(3);
 
-            //var names1 = SelectNames(sheet1, DocType.Doc1);
-            //SelectNames(sheet2, DocType.Doc1);
             var names3 = SelectNames(sheet3, DocType.Doc3).Where(i => !string.IsNullOrEmpty(i));
-
+            
             var criteriaList = CompareCriteriaSet.GetCriterias;
             foreach (var name in names3)
             {
                 var row3 = SelectRow(name, sheet3, DocType.Doc3);
-                var row1 = SelectRow(name, sheet1, DocType.Doc1);
+                var row2 = SelectRow(name, sheet2, DocType.Doc2);
 
-                if(row1 != null)
+                RowReport rowReport;
+
+                if (row2 != null)
                 {
-                    var rowReport = ProcessRows(row1, null, row3, criteriaList);
-                    rowReport.RowName = name;
-                    reportList.Add(rowReport);
+                    rowReport = ProcessRows(row2, row3, criteriaList);
                 }
+                else
+                {
+                    rowReport = new RowReport
+                    {
+                        Result = RowResult.Skipped,
+                        CellReports = new List<CellReport>()
+                    };
+                }
+                rowReport.RowName = name;
+                reportList.Add(rowReport);
             }
-            
-            return new DocReport { RowReports = reportList, Result = !reportList.Where(i => i.Result == false).Any() };
+            return new DocReport { RowReports = reportList, Result = !reportList.Where(i => i.Result == RowResult.Failed).Any() };
         }
 
-        private RowReport ProcessRows(IXLRow row1, IXLRow row2, IXLRow row3, IList<AttributeMapping> criteriaList)
+        #region Private helpers
+        private RowReport ProcessRows(IXLRow row2, IXLRow row3, IList<AttributeMapping> criteriaList)
         {
             var cellReports = new List<CellReport>();
             foreach (var criteria in criteriaList)
             {
-                var cell1 = row1.Cell(criteria.Offset1);
+                var cell1 = row2.Cell(criteria.Offset2);
                 var cell3 = row3.Cell(criteria.Offset3);
                 var result = cell1.Value.ToString() == cell3.Value.ToString();
                 var message = result ? $"Значення: \"{cell3.Value}\"" : $"Атрибут: {criteria.AttributeName}. Значення: \"{cell3.Value}\". Очікування: \"{cell1.Value}\".";
-                var cellReport = new CellReport 
+                var cellReport = new CellReport
                 {
                     Address = cell3.Address.ToString(),
                     Result = result,
@@ -56,7 +63,7 @@ namespace CurriculumHandler.Services
             return new RowReport
             {
                 CellReports = cellReports,
-                Result = !cellReports.Where(i => !i.Result).Any()
+                Result = !cellReports.Where(i => !i.Result).Any() ? RowResult.Successed : RowResult.Failed
             };
         }
 
@@ -65,7 +72,7 @@ namespace CurriculumHandler.Services
             var targetColumnId = type switch
             {
                 DocType.Doc1 => 2,
-                DocType.Doc2 => 0,
+                DocType.Doc2 => 2,
                 DocType.Doc3 => 4,
                 _ => throw new NotImplementedException(),
             };
@@ -94,5 +101,6 @@ namespace CurriculumHandler.Services
             }
             return list;
         }
+        #endregion
     }
 }

@@ -7,7 +7,8 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddMvc();
 
 builder.Services.AddTransient<IDocReader, DocReader>();
-builder.Services.AddTransient<IDocProcessor, DocProcessor>();
+builder.Services.AddTransient<LoadingProcessor>();
+builder.Services.AddTransient<WorkingProcessor>();
 
 var app = builder.Build();
 
